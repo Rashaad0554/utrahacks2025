@@ -2,7 +2,7 @@
 int enA = 9;
 int in1 = 8;
 int in2 = 7;
-const int motorTime = 20000;
+const int motorTime = 2000;
 bool heliDetected = false;
 
 void setup() {
@@ -15,6 +15,7 @@ void setup() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
 
+  pinMode(LED_BUILTIN, OUTPUT);
   // Start Serial Communication
   Serial.begin(9600);
 }
@@ -25,29 +26,21 @@ void loop() {
     char received = Serial.read(); // Read one byte
 
     if (received == '1') {
-      heliDetected = true;
+      digitalWrite(LED_BUILTIN, HIGH);
       Serial.println("Helipad detected - Ready to activate motor");
+      // Set motor A speed to max
+      analogWrite(enA, 255);
+      // Turn on motor
+      digitalWrite(in1, HIGH);
+      digitalWrite(in2, LOW);
+      // turn motor for 20 seconds
+      delay(motorTime);
+      // Turn off motors
+      digitalWrite(in1, LOW);
+      digitalWrite(in2, LOW);
     } else if (received == '0') {
-      heliDetected = false;
       Serial.println("No helipad - Motor will not activate");
+      digitalWrite(LED_BUILTIN, LOW);
     }
-  }
-
-  // If helipad detected, activate motor
-  if (heliDetected) {
-    Serial.println("Activating motor...");
-    analogWrite(enA, 255);   // Set motor speed to max
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, LOW);
-    
-    delay(motorTime); // Run motor for 20 seconds
-    
-    // Stop motor
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, LOW);
-    Serial.println("Motor stopped");
-
-    // Reset heliDetected to prevent re-triggering until new detection occurs
-    heliDetected = false;
   }
 }
